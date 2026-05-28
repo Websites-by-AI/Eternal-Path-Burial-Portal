@@ -284,27 +284,27 @@ export default function HomePage() {
             <span className="inline-block px-4 py-1.5 bg-emerald-600 text-white text-[11px] font-bold uppercase tracking-[0.25em] rounded-full mb-6 shadow-xl shadow-emerald-900/20">
               سامانه مرکزی آرامستان‌های زنجان
             </span>
-            <h2 className="text-5xl md:text-7xl font-black text-white mb-8 tracking-tight leading-tight drop-shadow-2xl">
+            <h2 className="text-3xl sm:text-5xl md:text-7xl font-black text-white mb-8 tracking-tight leading-tight drop-shadow-2xl">
               جستجوی هوشمند <span className="text-emerald-300">مزارات</span> <br />
-              <span className="text-stone-200 font-medium text-3xl md:text-5xl mt-2 block">پایگاه جامع بهشت زهرای زنجان</span>
+              <span className="text-stone-200 font-medium text-lg sm:text-3xl md:text-5xl mt-2 block">پایگاه جامع بهشت زهرای زنجان</span>
             </h2>
             
             <form onSubmit={handleSearch} className="max-w-2xl mx-auto relative group">
-              <div className="relative flex items-center bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_32px_64px_-15px_rgba(0,0,0,0.3)] h-20 p-1.5 border border-white/50">
-                <div className="pr-6">
-                  <Search className="w-6 h-6 text-emerald-600" />
+              <div className="relative flex flex-col sm:flex-row items-center bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-2xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.2)] h-auto sm:h-20 p-2 sm:p-1.5 border border-white/50 gap-2 sm:gap-0">
+                <div className="w-full sm:w-auto flex items-center flex-1 pr-3 sm:pr-4">
+                  <Search className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 shrink-0" />
+                  <input 
+                    type="text" 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="نام متوفی (مانند حسین منزوی)..."
+                    className="w-full bg-transparent py-2.5 sm:py-0 px-3 outline-none text-stone-900 text-base sm:text-lg font-bold placeholder:text-stone-300 text-right"
+                  />
                 </div>
-                <input 
-                  type="text" 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="نام متوفی (مانند حسین منزوی)..."
-                  className="w-full h-full bg-transparent px-5 outline-none text-stone-900 text-lg font-bold placeholder:text-stone-300 text-right"
-                />
                 <button 
                   type="submit"
                   disabled={isSearching}
-                  className="bg-emerald-700 text-white h-full px-10 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-emerald-800 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+                  className="w-full sm:w-auto bg-emerald-700 text-white py-3 sm:py-0 h-11 sm:h-full px-8 sm:px-10 rounded-xl font-black text-xs sm:text-sm tracking-widest hover:bg-emerald-800 transition-all shadow-lg active:scale-95 disabled:opacity-50"
                 >
                   {isSearching ? '...' : 'جستجوی مزار'}
                 </button>
