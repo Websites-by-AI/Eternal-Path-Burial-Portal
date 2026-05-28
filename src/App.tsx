@@ -169,6 +169,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCemeteryFilter, setSelectedCemeteryFilter] = useState<string>('all');
   const [selectedGrave, setSelectedGrave] = useState<ZanjanGrave>(ZANJAN_GRAVES_DB[0]);
+  const [mapType, setMapType] = useState<'live' | 'radar'>('live');
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
   const [hasGpsSuccess, setGpsSuccess] = useState(false);
@@ -235,6 +236,28 @@ const redirectRoute = (lat, lng, appName) => {
       google: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
     };
   }, [selectedGrave]);
+
+  // Haversine formula to calculate distance between user coordinates and target grave
+  const distanceToGrave = useMemo(() => {
+    if (!userLocation) return null;
+    const [lat1, lon1] = userLocation;
+    const { lat: lat2, lng: lon2 } = selectedGrave;
+    
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c; // Distance in km
+    
+    if (d < 1) {
+      return `${Math.round(d * 1000)} متر`;
+    }
+    return `${d.toFixed(2)} کیلومتر`;
+  }, [userLocation, selectedGrave]);
 
   // Share coordinates
   const handleCopyShareLink = () => {
@@ -607,81 +630,130 @@ export default {
                       </div>
                     )}
 
-                    {/* Simulated High Fidelity Live Map */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-xs font-bold text-slate-500 block">شبیه‌ساز نقشه ماهواره‌ای و ردیابی GPS مزار:</span>
-                        <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 rounded">ماهواره ایران مبنا</span>
+                    {/* Simulated High Fidelity Live Map & Real OSM Toggle */}
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center bg-gray-50 p-1.5 rounded-xl border border-gray-200/60 flex-wrap gap-2">
+                        <span className="text-xs font-bold text-slate-700 pr-2">موقعیت‌یاب هوشمند مزار:</span>
+                        <div className="flex gap-1 text-[11px] font-bold">
+                          <button
+                            type="button"
+                            onClick={() => setMapType('live')}
+                            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                              mapType === 'live'
+                                ? 'bg-emerald-600 text-white shadow-xs'
+                                : 'text-gray-500 hover:text-gray-800'
+                            }`}
+                          >
+                            <MapIcon className="w-3.5 h-3.5" />
+                            <span>نقشه تعاملی زنجان</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMapType('radar')}
+                            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                              mapType === 'radar'
+                                ? 'bg-emerald-600 text-white shadow-xs'
+                                : 'text-gray-500 hover:text-gray-800'
+                            }`}
+                          >
+                            <Compass className="w-3.5 h-3.5" />
+                            <span>مسیریاب آفلاین و رادار GPS</span>
+                          </button>
+                        </div>
                       </div>
                       
-                      <div className="h-60 bg-slate-900 rounded-xl overflow-hidden relative shadow-inner flex flex-col justify-between p-4 bg-[url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80')] bg-cover bg-center">
-                        {/* Overlay darker mesh */}
-                        <div className="absolute inset-0 bg-slate-950/70 pointer-events-none" />
-
-                        {/* Top indicators */}
-                        <div className="relative z-10 flex justify-between items-center w-full">
-                          <span className="text-[10px] bg-slate-800/90 text-slate-300 font-mono px-2 py-1 rounded-md border border-slate-700/80">
-                            مزارستان: {selectedGrave.cemeteryLabel}
-                          </span>
-                          <span className="text-[10px] bg-emerald-500 text-white font-mono px-2 py-1 rounded-md font-bold flex items-center gap-1.5 shadow-sm">
+                      {mapType === 'live' ? (
+                        <div className="h-72 bg-slate-100 rounded-xl overflow-hidden border border-slate-200 relative shadow-inner">
+                          <iframe
+                            title="نقشه مزارستان تاریخی زنجان"
+                            width="100%"
+                            height="100%"
+                            src={`https://www.openstreetmap.org/export/embed.html?bbox=${selectedGrave.lng - 0.003}%2C${selectedGrave.lat - 0.0015}%2C${selectedGrave.lng + 0.003}%2C${selectedGrave.lat + 0.0015}&layer=mapnik&marker=${selectedGrave.lat}%2C${selectedGrave.lng}`}
+                            style={{ border: 0 }}
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="absolute top-2 right-2 bg-emerald-600/90 backdrop-blur-xs px-2.5 py-1 rounded-lg text-white font-mono text-[10px] shadow-md border border-emerald-500/30 flex items-center gap-1.5 font-bold">
                             <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
-                            قبر هدف مشخص شد
-                          </span>
-                        </div>
-
-                        {/* Routing Vector lines & distance simulation */}
-                        <div className="relative z-10 flex flex-col items-center justify-center my-auto space-y-2">
-                          <div className="flex items-center gap-5">
-                            
-                            {/* Current mobile phone location node */}
-                            <div className="flex flex-col items-center">
-                              <div className="w-10 h-10 rounded-full bg-indigo-600 border-2 border-white flex items-center justify-center text-white font-bold text-xs animate-bounce shadow-md">
-                                شما
-                              </div>
-                              <span className="text-[9px] text-indigo-200 mt-1 font-bold">موبایل شما</span>
+                            موقعیت دقیق مزار در زنجان تأیید شد
+                          </div>
+                          
+                          {distanceToGrave && (
+                            <div className="absolute bottom-2 left-2 bg-white/95 backdrop-blur-xs px-3 py-1.5 rounded-lg text-slate-800 text-[11px] shadow-md border border-slate-200/80 font-bold block">
+                              فاصله شما تا مزار: <span className="text-emerald-700 font-mono">{distanceToGrave}</span>
                             </div>
-
-                            {/* Arrow connector */}
-                            <div className="flex flex-col items-center">
-                              <span className="text-[9px] text-slate-300 font-mono bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">
-                                {userLocation ? "یافت شده با ماهواره" : "در انتظار GPS..."}
-                              </span>
-                              <div className="w-24 border-t-2 border-dashed border-emerald-500 my-2.5 relative">
-                                <div className="absolute right-1/2 -top-1.5 w-3 h-3 bg-emerald-500 rounded-full" />
-                              </div>
-                            </div>
-
-                            {/* Grave location node */}
-                            <div className="flex flex-col items-center animate-pulse">
-                              <div className="w-10 h-10 rounded-full bg-emerald-600 border-2 border-white flex items-center justify-center text-white shadow-md">
-                                🪦
-                              </div>
-                              <span className="text-[9px] text-emerald-200 mt-1 font-bold">{selectedGrave.block}</span>
-                            </div>
-
+                          )}
+                          
+                          <div className="absolute bottom-2 right-2 bg-white/95 backdrop-blur-xs px-2.5 py-1.5 rounded-lg text-slate-700 text-[10px] shadow-xs border border-slate-200/80 font-mono">
+                            مختصات لایو زنجان: {selectedGrave.lat.toFixed(6)}, {selectedGrave.lng.toFixed(6)}
                           </div>
                         </div>
+                      ) : (
+                        <div className="h-72 bg-slate-900 rounded-xl overflow-hidden relative shadow-inner flex flex-col justify-between p-4 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-emerald-950/20">
+                          {/* Top indicators */}
+                          <div className="relative z-10 flex justify-between items-center w-full">
+                            <span className="text-[10px] bg-slate-800/90 text-slate-300 font-mono px-2 py-1 rounded-md border border-slate-700/80">
+                              مزارستان: {selectedGrave.cemeteryLabel}
+                            </span>
+                            <span className="text-[10px] bg-emerald-500 text-white font-mono px-2 py-1 rounded-md font-bold flex items-center gap-1.5 shadow-sm">
+                              <span className="w-1.5 h-1.5 bg-white rounded-full animate-ping"></span>
+                              رادار GPS متصل شد
+                            </span>
+                          </div>
 
-                        {/* Interactive GPS mobile simulation controller */}
-                        <div className="relative z-10 flex justify-between items-center bg-slate-900/90 p-2.5 rounded-lg border border-slate-800 gap-2">
-                          <button
-                            onClick={handleGetMobileGPS}
-                            disabled={gpsLoading}
-                            className="text-[11px] font-bold text-indigo-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-md border border-slate-700 cursor-pointer disabled:opacity-50 transition-all flex items-center gap-1.5 shrink-0"
-                          >
-                            <Navigation className="w-3.5 h-3.5 animate-spin duration-1000" />
-                            <span>{gpsLoading ? "ردگیری زنده..." : "📍 دریافت GPS گوشی شما"}</span>
-                          </button>
-                          
-                          <p className="text-[10px] text-slate-400 leading-normal text-right">
-                            {userLocation 
-                              ? `موقعیت دریافت شده: ${userLocation[0].toFixed(5)}, ${userLocation[1].toFixed(5)} (فوت پرینت زائر زنجان)` 
-                              : "سیستم آماده است. برای شروع ناوبری صوتی و آفلاین در داخل مزارستان زنجان، GPS گوشی خود را روشن کنید."
-                            }
-                          </p>
+                          {/* Routing Vector lines & distance simulation */}
+                          <div className="relative z-10 flex flex-col items-center justify-center my-auto space-y-2">
+                            <div className="flex items-center gap-5">
+                              
+                              {/* Current mobile phone location node */}
+                              <div className="flex flex-col items-center">
+                                <div className="w-10 h-10 rounded-full bg-indigo-600 border-2 border-white flex items-center justify-center text-white font-bold text-xs animate-bounce shadow-md">
+                                  شما
+                                </div>
+                                <span className="text-[9px] text-indigo-200 mt-1 font-bold">موبایل زائر</span>
+                              </div>
+
+                              {/* Arrow connector */}
+                              <div className="flex flex-col items-center">
+                                <span className="text-[9px] text-emerald-200 font-mono bg-emerald-900/40 px-2 py-0.5 rounded border border-emerald-800/60 font-bold">
+                                  {distanceToGrave ? `فاصله: ${distanceToGrave}` : "در انتظار سیگنال..."}
+                                </span>
+                                <div className="w-24 border-t-2 border-dashed border-emerald-500 my-2.5 relative">
+                                  <div className="absolute right-1/2 -top-1.5 w-3 h-3 bg-emerald-500 rounded-full" />
+                                </div>
+                              </div>
+
+                              {/* Grave location node */}
+                              <div className="flex flex-col items-center">
+                                <div className="w-10 h-10 rounded-full bg-emerald-600 border-2 border-white flex items-center justify-center text-white shadow-md">
+                                  🪦
+                                </div>
+                                <span className="text-[9px] text-emerald-200 mt-1 font-bold">{selectedGrave.block}</span>
+                              </div>
+
+                            </div>
+                          </div>
+
+                          {/* Interactive GPS mobile simulation controller */}
+                          <div className="relative z-10 flex justify-between items-center bg-slate-900/90 p-2.5 rounded-lg border border-slate-800 gap-2">
+                            <button
+                              type="button"
+                              onClick={handleGetMobileGPS}
+                              disabled={gpsLoading}
+                              className="text-[11px] font-bold text-indigo-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-md border border-slate-700 cursor-pointer disabled:opacity-50 transition-all flex items-center gap-1.5 shrink-0"
+                            >
+                              <Navigation className="w-3.5 h-3.5 animate-spin duration-1000" />
+                              <span>{gpsLoading ? "ردگیری زنده..." : "📍 دریافت GPS گوشی شما"}</span>
+                            </button>
+                            
+                            <p className="text-[10px] text-slate-400 leading-normal text-right">
+                              {userLocation 
+                                ? `موقعیت زائر دریافتی: ${userLocation[0].toFixed(5)}, ${userLocation[1].toFixed(5)} در نقشه زنجان` 
+                                : "سیستم آماده است. برای نمایش فاصله هم‌اکنون جی‌پی‌اس موبایل خود را با دکمه بالا فعال فرمایید."
+                              }
+                            </p>
+                          </div>
                         </div>
-
-                      </div>
+                      )}
                     </div>
 
                     {/* REAL INTEGRATION TARGETS (Balad, Neshan, Google Maps) */}
