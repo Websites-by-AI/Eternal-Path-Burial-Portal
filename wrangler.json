@@ -2,8 +2,7 @@
   "name": "eternal-path-burial-portal",
   "compatibility_date": "2026-05-28",
   "assets": {
-    "directory": "./dist",
-    "binding": "ASSETS"
+    "directory": "./dist"
   },
   "observability": {
     "enabled": true

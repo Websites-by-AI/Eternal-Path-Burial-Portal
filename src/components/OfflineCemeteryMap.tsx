@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { Compass, ZoomIn, ZoomOut, Info, User, Crosshair, ExternalLink, Map as MapIcon, Navigation, Activity, Clock, Calendar, AlertCircle } from 'lucide-react';
+import { Compass, ZoomIn, ZoomOut, Info, User, Crosshair, ExternalLink, Map as MapIcon, Navigation, Activity, Clock, Calendar, AlertCircle, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 // Bounding box mapping for Zanjan Behesht-e-Zahra Coordinates

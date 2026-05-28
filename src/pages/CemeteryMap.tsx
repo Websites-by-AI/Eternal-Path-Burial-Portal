@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../lib/firebase';
 import { collection, getDocs, query, limit } from 'firebase/firestore';
-import { MapPin, Search, ChevronRight, X, Info, Footprints, Calendar } from 'lucide-react';
+import { MapPin, Search, ChevronRight, X, Info, Footprints, Calendar, Navigation } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { fallbackZanjanGraves } from '../lib/fallbackData';
