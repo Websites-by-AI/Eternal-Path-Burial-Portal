@@ -245,17 +245,20 @@ export default function StaffPortal({ user }: StaffPortalProps) {
           <h4 className="text-sm font-black uppercase tracking-widest">راهنمای بارگذاری و بایگانی دیجیتال</h4>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <h5 className="text-[11px] font-black text-amber-800">۱. ثبت در محل (تکی)</h5>
-            <p className="text-[10px] text-amber-700/80 leading-relaxed font-bold">از سنگ مزار عکس بگیرید؛ هوش مصنوعی متن را استخراج کرده و GPS گوشی شما محل دقیق را ثبت می‌کند.</p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-center w-8 h-8 bg-amber-200/50 rounded-full text-amber-900 font-black text-xs mr-auto">۱</div>
+            <h5 className="text-[11px] font-black text-amber-800">ثبت در محل (تکی)</h5>
+            <p className="text-[10px] text-amber-700/80 leading-relaxed font-bold">از سنگ مزار عکس بگیرید؛ هوش مصنوعی متن را استخراج کرده و GPS گوشی شما محل دقیق را ثبت می‌کند. مناسب برای بروزرسانی‌های روزانه.</p>
           </div>
-          <div className="space-y-2">
-            <h5 className="text-[11px] font-black text-amber-800">۲. بارگذاری انبوه (CSV)</h5>
-            <p className="text-[10px] text-amber-700/80 leading-relaxed font-bold">اطلاعات بایگانی کاغذی را در فایل اکسل وارد کرده و با فرمت CSV ذخیره و بارگذاری کنید.</p>
+          <div className="space-y-4 border-x border-amber-100 px-6">
+            <div className="flex items-center justify-center w-8 h-8 bg-amber-200/50 rounded-full text-amber-900 font-black text-xs mr-auto">۲</div>
+            <h5 className="text-[11px] font-black text-amber-800">بارگذاری انبوه (CSV)</h5>
+            <p className="text-[10px] text-amber-700/80 leading-relaxed font-bold">اطلاعات بایگانی کاغذی را در فایل اکسل وارد کرده و با فرمت CSV ذخیره و بارگذاری کنید. حتماً از مختصات اعشاری (Decimal) استفاده کنید.</p>
           </div>
-          <div className="space-y-2">
-            <h5 className="text-[11px] font-black text-amber-800">۳. همگام‌سازی نهایی</h5>
-            <p className="text-[10px] text-amber-700/80 leading-relaxed font-bold">پس از تایید اطلاعات، داده‌ها در پایگاه داده ابری (Firebase/Cloudflare) ذخیره و در نقشه عمومی فعال می‌شوند.</p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-center w-8 h-8 bg-amber-200/50 rounded-full text-amber-900 font-black text-xs mr-auto">۳</div>
+            <h5 className="text-[11px] font-black text-amber-800">همگام‌سازی نهایی</h5>
+            <p className="text-[10px] text-amber-700/80 leading-relaxed font-bold">پس از تایید اطلاعات، داده‌ها در پایگاه داده ابری ذخیره و در نقشه عمومی فعال می‌شوند. این فرآیند امن و خودکار است.</p>
           </div>
         </div>
       </div>

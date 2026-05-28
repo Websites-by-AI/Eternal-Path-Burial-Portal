@@ -30,27 +30,31 @@ interface OfflineCemeteryMapProps {
 }
 
 // Custom Marker Icons for high-fidelity interactive map
-const createCustomIcon = (color: string, size: number = 32, isSelected: boolean = false) => {
-  const glowValue = isSelected ? 'drop-shadow(0 0 12px rgba(16, 185, 129, 0.5))' : '';
-  const scale = isSelected ? 1.4 : 1;
-  const bounceClass = isSelected ? 'animate-bounce' : '';
+const createCustomIcon = (color: string, size: number = 36, isSelected: boolean = false) => {
+  const glowValue = isSelected ? 'drop-shadow(0 0 15px rgba(16, 185, 129, 0.6))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))';
+  const scale = isSelected ? 1.3 : 1;
+  const pulseClass = isSelected ? 'animate-pulse' : '';
   
   return L.divIcon({
-    html: `<div class="${bounceClass}" style="color: ${color}; filter: ${glowValue}; transform: scale(${scale}); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-            <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+    html: `<div class="${pulseClass}" style="color: ${color}; filter: ${glowValue}; transform: scale(${scale}); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" fill="white" />
             </svg>
           </div>`,
-    className: 'custom-marker-icon',
+    className: 'custom-marker-icon-container',
     iconSize: [size, size],
     iconAnchor: [size / 2, size],
+    popupAnchor: [0, -size],
   });
 };
 
 const userIcon = L.divIcon({
   html: `<div class="relative flex items-center justify-center">
-          <div class="absolute w-12 h-12 bg-blue-500/20 rounded-full animate-ping"></div>
-          <div class="relative bg-blue-600 border-[3px] border-white rounded-full w-5 h-5 shadow-2xl"></div>
+          <div class="absolute w-12 h-12 bg-blue-500/30 rounded-full animate-ping"></div>
+          <div class="relative bg-white p-0.5 rounded-full shadow-2xl">
+            <div class="bg-blue-600 rounded-full w-4 h-4 border-2 border-white"></div>
+          </div>
         </div>`,
   className: '',
   iconSize: [24, 24],
@@ -325,13 +329,24 @@ export default function OfflineCemeteryMap({
 
         {isValidLatLng(graveLocation) && (
           <Marker position={[graveLocation.lat, graveLocation.lng]} icon={createCustomIcon('#10b981', 42, true)}>
-            <Popup className="custom-popup">
-              <div className="text-right font-sans p-2 min-w-[140px]">
-                <p className="font-black text-emerald-900 text-sm mb-1">{targetGraveName || 'مزار انتخابی'}</p>
-                {targetGraveInfo && <p className="text-[10px] text-stone-500 mb-2 leading-relaxed">{targetGraveInfo}</p>}
-                <div className="flex items-center gap-2 text-[9px] text-emerald-600 font-bold justify-end border-t border-emerald-50 pt-2">
+            <Popup className="custom-popup" offset={[0, -10]}>
+              <div className="text-right font-sans p-2 min-w-[160px]">
+                <div className="flex items-center gap-2 justify-end mb-2">
+                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-black">هدف</span>
+                  <p className="font-black text-emerald-900 text-sm">{targetGraveName || 'مزار انتخابی'}</p>
+                </div>
+                {targetGraveInfo && (
+                  <div className="flex items-center gap-1.5 justify-end text-[10px] text-stone-500 mb-3 bg-stone-50 p-1.5 rounded-lg border border-stone-100">
+                    <span>قطعه: {targetGraveInfo}</span>
+                    <MapPin className="w-3 h-3 text-stone-400" />
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-[9px] text-emerald-600 font-bold justify-end border-t border-emerald-50 pt-2.5">
                   <span>آماده هدایت ناوبری</span>
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                  <div className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </div>
                 </div>
               </div>
             </Popup>
@@ -524,12 +539,42 @@ export default function OfflineCemeteryMap({
       </AnimatePresence>
 
       <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
-        <div className="bg-emerald-950/90 backdrop-blur-2xl p-1.5 rounded-xl shadow-xl border border-white/10 flex flex-col gap-1.5">
-          <button onClick={handleZoomIn} className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-lg transition-all text-white active:scale-90"><ZoomIn className="w-4 h-4" /></button>
-          <div className="h-px bg-white/10 mx-2" />
-          <button onClick={handleZoomOut} className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-lg transition-all text-white active:scale-90"><ZoomOut className="w-4 h-4" /></button>
+        <div className="bg-white/90 backdrop-blur-2xl p-1 rounded-2xl shadow-2xl border border-white/40 flex flex-col gap-1">
+          <button onClick={handleZoomIn} className="w-10 h-10 flex items-center justify-center hover:bg-stone-50 rounded-xl transition-all text-stone-800 active:scale-90"><ZoomIn className="w-5 h-5" /></button>
+          <div className="h-px bg-stone-100 mx-3" />
+          <button onClick={handleZoomOut} className="w-10 h-10 flex items-center justify-center hover:bg-stone-50 rounded-xl transition-all text-stone-800 active:scale-90"><ZoomOut className="w-5 h-5" /></button>
         </div>
-        <button onClick={handleRecenter} className="w-10 h-10 bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl shadow-xl flex items-center justify-center transition-all hover:-translate-y-0.5 active:scale-95 border border-white/20"><Compass className="w-5 h-5" /></button>
+        <button onClick={handleRecenter} className="w-12 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-2xl flex items-center justify-center transition-all hover:shadow-emerald-500/20 active:scale-95 border border-emerald-500/50 group/compass">
+          <Compass className="w-6 h-6 group-hover/compass:rotate-12 transition-transform" />
+        </button>
+      </div>
+
+      {/* Map Legend */}
+      <div className="absolute bottom-3 right-3 z-10 hidden lg:block group/legend">
+        <div className="bg-white/90 backdrop-blur-xl p-3 rounded-2xl shadow-2xl border border-white/50 text-right font-sans transition-all w-48 group-hover/legend:w-56 overflow-hidden">
+          <h6 className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 flex items-center justify-end gap-1.5 flex-row-reverse">
+             راهنمای نقشه
+             <Info className="w-3 h-3" />
+          </h6>
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700">
+              <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
+              <span>مزار انتخابی شما</span>
+            </div>
+            <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700">
+              <div className="w-2.5 h-2.5 bg-white border border-stone-300 rounded-full" />
+              <span>مزارات عمومی</span>
+            </div>
+            <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700">
+              <div className="w-2.5 h-2.5 bg-blue-600 rounded-full outline outline-2 outline-white" />
+              <span>موقعیت کنونی شما</span>
+            </div>
+            <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700 border-t border-stone-100 pt-1.5 mt-1.5">
+              <div className="w-3 h-0.5 bg-emerald-500 border-t border-dashed border-emerald-500/50" />
+              <span>مسیر مستقیم به هدف</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <AnimatePresence>
