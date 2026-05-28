@@ -1,0 +1,58 @@
+{
+  "entities": {
+    "Cemetery": {
+      "title": "Cemetery",
+      "description": "Information about a cemetery location",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        }
+      },
+      "required": ["name", "location"]
+    },
+    "Grave": {
+      "title": "Grave",
+      "description": "A specific grave record with AI-extracted data",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "fatherName": { "type": "string" },
+        "birthDate": { "type": "string" },
+        "deathDate": { "type": "string" },
+        "inscription": { "type": "string" },
+        "photoUrl": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "cemeteryId": { "type": "string" },
+        "block": { "type": "string" },
+        "row": { "type": "string" },
+        "number": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["fullName", "location", "photoUrl", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/cemeteries": {
+      "schema": "Cemetery",
+      "description": "List of available cemeteries"
+    },
+    "/graves": {
+      "schema": "Grave",
+      "description": "Database of registered graves"
+    }
+  }
+}

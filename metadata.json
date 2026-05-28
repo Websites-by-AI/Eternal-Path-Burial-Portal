@@ -1,0 +1,6 @@
+{
+  "name": "Eternal Path: Burial Portal",
+  "description": "سامانه مدیریت و مسیریابی آرامستان با استفاده از هوش مصنوعی، بومی‌سازی شده به زبان فارسی.",
+  "requestFramePermissions": ["camera", "geolocation"],
+  "majorCapabilities": ["AI Data Extraction", "GPS Navigation"]
+}

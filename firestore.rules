@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 0. Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Validation Blueprints ---
+
+    function isValidCemetery(data) {
+      return data.keys().hasAll(['name', 'location']) &&
+             data.keys().size() >= 2 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 200 &&
+             data.location is map &&
+             data.location.lat is number && data.location.lng is number;
+    }
+
+    function isValidGrave(data) {
+      return data.keys().hasAll(['fullName', 'location', 'photoUrl', 'createdAt', 'cemeteryId']) &&
+             data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 200 &&
+             (data.fatherName == null || (data.fatherName is string && data.fatherName.size() <= 200)) &&
+             data.photoUrl is string && data.photoUrl.size() > 0 && data.photoUrl.size() <= 1000 &&
+             data.cemeteryId is string &&
+             data.location is map &&
+             data.location.lat is number && data.location.lng is number &&
+             data.createdAt is timestamp;
+    }
+
+    // --- Collections ---
+
+    match /cemeteries/{cemeteryId} {
+      allow read: if true;
+      allow create: if isEmailVerified() && isValidId(cemeteryId) && isValidCemetery(incoming());
+      allow update: if isEmailVerified() && isValidCemetery(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['name', 'description', 'location'])
+      );
+      allow delete: if isEmailVerified(); // Maybe restrict to admins later
+    }
+
+    match /graves/{graveId} {
+      allow read: if true;
+      allow create: if isEmailVerified() && 
+                       isValidId(graveId) && 
+                       isValidGrave(incoming()) &&
+                       incoming().createdAt == request.time &&
+                       exists(/databases/$(database)/documents/cemeteries/$(incoming().cemeteryId));
+      allow update: if isEmailVerified() && 
+                       isValidGrave(incoming()) &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         incoming().diff(existing()).affectedKeys().hasOnly(['fullName', 'birthDate', 'deathDate', 'inscription', 'photoUrl', 'location', 'number', 'block', 'row'])
+                       );
+      allow delete: if isEmailVerified();
+    }
+  }
+}

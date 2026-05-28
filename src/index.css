@@ -1,0 +1,17 @@
+@import "tailwindcss";
+@import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
+
+@theme {
+  --font-sans: "Vazirmatn", "Vazir", "Tahoma", "Segoe UI", "B Yekan", "Arial", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-brand-primary: #064e3b; /* darker emerald */
+  --color-brand-secondary: #059669; /* emerald-600 */
+  --color-brand-accent: #10b981; /* emerald-500 */
+}
+
+@layer base {
+  body {
+    @apply antialiased bg-[#f8faf9] text-stone-800;
+  }
+}
