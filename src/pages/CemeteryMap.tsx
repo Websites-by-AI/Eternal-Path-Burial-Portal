@@ -72,12 +72,24 @@ export default function CemeteryMap() {
   const allBlocks = Array.from(new Set(graves.map(g => g.block))).filter(Boolean).sort();
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
 
+  const calculateDistanceInMeters = (loc: { lat: number, lng: number }) => {
+    if (!userLocation) return Infinity;
+    const from = L.latLng(userLocation.lat, userLocation.lng);
+    const to = L.latLng(loc.lat, loc.lng);
+    return from.distanceTo(to);
+  };
+
   const filteredGraves = graves.filter(g => {
     const matchesSearch = (g.fullName.includes(searchQuery) || 
                           (g.fatherName && g.fatherName.includes(searchQuery)) ||
                           (g.block && g.block.includes(searchQuery)));
     const matchesBlock = !selectedBlock || g.block === selectedBlock;
     return matchesSearch && matchesBlock;
+  }).sort((a, b) => {
+    if (userLocation) {
+      return calculateDistanceInMeters(a.location) - calculateDistanceInMeters(b.location);
+    }
+    return 0;
   });
 
   return (
@@ -263,10 +275,10 @@ export default function CemeteryMap() {
                     <button
                       key={grave.id}
                       onClick={() => setSelectedGrave(grave)}
-                      className="group w-full p-5 bg-white hover:bg-emerald-50/30 border border-stone-200 hover:border-emerald-200 rounded-3xl text-right transition-all flex items-center justify-between flex-row-reverse text-stone-800 shadow-sm hover:shadow-md"
+                      className={`group w-full p-5 border rounded-3xl text-right transition-all flex items-center justify-between flex-row-reverse shadow-sm hover:shadow-md ${selectedGrave?.id === grave.id ? 'bg-emerald-50 border-emerald-300 ring-2 ring-emerald-500/10' : 'bg-white border-stone-200 hover:border-emerald-200'}`}
                     >
                       <div className="space-y-1">
-                        <p className="font-black text-[15px] group-hover:text-emerald-900 transition-colors">{grave.fullName}</p>
+                        <p className={`font-black text-[15px] transition-colors ${selectedGrave?.id === grave.id ? 'text-emerald-900' : 'group-hover:text-emerald-900'}`}>{grave.fullName}</p>
                         <div className="flex items-center gap-2 justify-end text-[10px] text-stone-400 font-bold">
                           {calculateDistance(grave.location) && (
                             <>
@@ -282,8 +294,8 @@ export default function CemeteryMap() {
                           <span>فرزند {grave.fatherName || '...'}</span>
                         </div>
                       </div>
-                      <div className="w-10 h-10 rounded-2xl bg-stone-50 group-hover:bg-emerald-100 flex items-center justify-center transition-colors">
-                        <ChevronRight className="w-4 h-4 text-stone-300 group-hover:text-emerald-600 rotate-180" />
+                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-colors ${selectedGrave?.id === grave.id ? 'bg-emerald-600 text-white' : 'bg-stone-50 group-hover:bg-emerald-100 text-stone-300 group-hover:text-emerald-600'}`}>
+                        <ChevronRight className={`w-4 h-4 rotate-180 ${selectedGrave?.id === grave.id ? 'text-white' : ''}`} />
                       </div>
                     </button>
                   ))}

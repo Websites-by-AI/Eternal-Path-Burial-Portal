@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents, useMap, ScaleControl, Polygon } from 'react-leaflet';
 import L from 'leaflet';
 import { Compass, ZoomIn, ZoomOut, Info, User, Crosshair, ExternalLink, Map as MapIcon, Navigation, Activity, Clock, Calendar, AlertCircle, MapPin, Layers, Sun, Moon, Map, LocateFixed, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -26,8 +26,29 @@ interface OfflineCemeteryMapProps {
   onMarkerClick?: (marker: MapMarker) => void;
   onLocationSelect?: (loc: { lat: number; lng: number }) => void;
   isManualSelectMode?: boolean;
-  mapStyle?: 'satellite' | 'streets' | 'minimal';
+  mapStyle?: 'satellite' | 'streets' | 'minimal' | 'terrain';
 }
+
+const BLOCK_BOUNDARIES = [
+  {
+    id: 'block-old',
+    name: 'قطعات مزارات قدیمی (۱-۳۰)',
+    path: [[36.6580, 48.4910], [36.6605, 48.4918], [36.6592, 48.4945], [36.6575, 48.4935]],
+    color: '#fbbf24'
+  },
+  {
+    id: 'block-new',
+    name: 'قطعات مزارات جدید (۳۱-۷۰)',
+    path: [[36.6590, 48.4870], [36.6615, 48.4890], [36.6630, 48.4875], [36.6600, 48.4855]],
+    color: '#60a5fa'
+  },
+  {
+    id: 'block-martyrs',
+    name: 'گلزار شهدا',
+    path: [[36.6565, 48.4895], [36.6575, 48.4905], [36.6585, 48.4895], [36.6575, 48.4885]],
+    color: '#ef4444'
+  }
+];
 
 // Custom Marker Icons for high-fidelity interactive map
 const createCustomIcon = (color: string, size: number = 36, isSelected: boolean = false) => {
@@ -324,8 +345,13 @@ export default function OfflineCemeteryMap({
           </>
         ) : activeMapStyle === 'streets' ? (
           <TileLayer
-            attribution='&copy; OpenStreetMap'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; Google Maps'
+            url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+          />
+        ) : activeMapStyle === 'terrain' ? (
+          <TileLayer
+            attribution='&copy; Google Maps'
+            url="https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}"
           />
         ) : (
           <TileLayer
@@ -334,6 +360,27 @@ export default function OfflineCemeteryMap({
             maxZoom={19}
           />
         )}
+
+        <ScaleControl position="bottomleft" />
+
+        {/* Block Boundaries Visual Overlay */}
+        {BLOCK_BOUNDARIES.map(block => (
+          <Polygon 
+            key={block.id}
+            positions={block.path as any}
+            pathOptions={{ 
+              color: block.color, 
+              fillColor: block.color, 
+              fillOpacity: 0.05, 
+              weight: 2,
+              dashArray: '5, 10'
+            }}
+          >
+            <Popup>
+              <div className="text-right font-sans text-[10px] font-black">{block.name}</div>
+            </Popup>
+          </Polygon>
+        ))}
 
         {isValidLatLng(graveLocation) && (
           <Marker position={[graveLocation.lat, graveLocation.lng]} icon={createCustomIcon('#10b981', 42, true)}>
@@ -562,8 +609,12 @@ export default function OfflineCemeteryMap({
         
         <div className="bg-white/90 backdrop-blur-2xl p-1 rounded-2xl shadow-2xl border border-white/40 flex flex-col gap-1">
           <button 
-            onClick={() => setActiveMapStyle(activeMapStyle === 'satellite' ? 'streets' : 'satellite')} 
-            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-90 ${activeMapStyle === 'satellite' ? 'bg-emerald-50 text-emerald-600' : 'text-stone-800 hover:bg-stone-50'}`}
+            onClick={() => {
+              const styles: ('satellite' | 'streets' | 'terrain' | 'minimal')[] = ['satellite', 'streets', 'terrain', 'minimal'];
+              const nextIdx = (styles.indexOf(activeMapStyle) + 1) % styles.length;
+              setActiveMapStyle(styles[nextIdx]);
+            }} 
+            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-90 bg-emerald-50 text-emerald-600`}
             title="تغییر لایه نقشه"
           >
             <Layers className="w-5 h-5" />
