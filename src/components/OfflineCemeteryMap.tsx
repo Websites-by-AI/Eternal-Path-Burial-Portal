@@ -182,7 +182,7 @@ export default function OfflineCemeteryMap({
   const [map, setMap] = useState<L.Map | null>(null);
   const [isTrafficEnabled, setIsTrafficEnabled] = useState(false);
   const [isSimulationMode, setIsSimulationMode] = useState(false);
-  const [activeMapStyle, setActiveMapStyle] = useState<'satellite' | 'streets' | 'minimal'>(mapStyle);
+  const [activeMapStyle, setActiveMapStyle] = useState<'satellite' | 'streets' | 'minimal' | 'terrain'>(mapStyle);
   const [isLegendOpen, setIsLegendOpen] = useState(true);
   const [showMarkers, setShowMarkers] = useState(true);
   const [trafficDay, setTrafficDay] = useState<number>(new Date().getDay());
