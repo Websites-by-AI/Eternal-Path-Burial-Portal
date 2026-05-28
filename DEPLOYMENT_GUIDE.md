@@ -1,38 +1,86 @@
-# Cloudflare Deployment Guide
+# راهنمای جامع استقرار در کلودفلر (Cloudflare Deployment Guide)
 
-To fix the deployment error and host your app for free, please follow these steps in your Cloudflare Dashboard:
+ما سیستم را ارتقا دادیم تا به‌طور همزمان از هر دو روش محبوب استقرار روی کلودفلر (Cloudflare Pages و Cloudflare Workers) پشتیبانی کند. 
 
-## 1. Set the Build & Deploy Configuration
-The error `Infinite loop detected` was caused by the legacy `/* / 200` rewrite in the `_redirects` file. We have migrated the application to use Cloudflare's new native Worker Assets SPA routing by setting `"not_found_handling": "single-page-application"` inside `wrangler.json` and removing the error-prone `_redirects` file entirely!
+بزرگ‌ترین مشکل نسخه‌های قبلی این بود که **Express.js** به هسته Node.js وابسته است و بر روی لایه‌های Edge کلودفلر اجرا نمی‌شود، که باعث خطا در بخش API می‌شد. برای حل این مشکل، ما یک پردازنده‌ی اختصاصی سبک به نام **`_worker.js`** ساختیم که در بخش زیر توضیح داده شده است.
 
-The error `Missing Pages project name` happens if Cloudflare tries to run a Pages-specific deployment command (`npx wrangler pages deploy`) on a Wrangler Worker project.
+---
 
-To fix both errors, configure your build settings exactly like this in your **Cloudflare Dashboard**:
+## 💡 تفاوت Pages و Workers و حل مشکل شما
 
-1. Go to your **Cloudflare Dashboard**.
-2. Select your Worker project: `eternal-path-burial-portal`.
-3. Go to **Settings** -> **Build & Deploy** (Build configuration).
-4. Click **Edit** on your build configuration.
-5. Set the values to:
-   - **Root directory**: `/` (Or leave empty)
-   - **Build command**: `npm run build`
-   - **Deploy command**: `npx wrangler deploy` *(Ensure it is not 'pages deploy')*
-   - **Build output directory**: `dist`
-6. Click **Save**.
-7. Go to **Deployments** and click **Retry Deployment** (or trigger a new build by pushing/merging a commit).
+- **Cloudflare Pages (توصیه شده - اتصال مستقیم به گیت‌هاب):**
+  مخصوص پروژه‌های فرانت‌اند (مثل React/Vite) است. شما گیت‌هاب خود را وصل می‌کنید و کلودفلر خودکار بیلد می‌کند.
+  - **مسئله:** چطور API بک‌اند فعال بماند؟
+  - **پاسخ:** ما یک مفسر لبه هوشمند به نام `_worker.js` در پوشه `public` قرار دادیم. در طول اجرای بیلد، Vite این فایل را به پوشه بیلد (`dist`) کپی می‌کند. کلودفلر خودکار این فایل را به عنوان بک‌اند بدون سرور (Serverless Edge Worker) برای کل سایت شما اجرا می‌کند. به این ترتیب، کل برنامه شما (رابط کاربری + هوش مصنوعی) **کاملاً رایگان و بدون خاموشی** کار خواهد کرد!
 
-## 2. Using Firebase (Free Tier)
-This app uses **Firebase Firestore** which has a generous free tier. 
-- Ensure you have set your Firebase environment variables in your Cloudflare Dashboard's **Variables/Secrets** section:
-  - `VITE_FIREBASE_API_KEY`
-  - `VITE_FIREBASE_AUTH_DOMAIN`
-  - `VITE_FIREBASE_PROJECT_ID`
-  - `VITE_FIREBASE_STORAGE_BUCKET`
-  - `VITE_FIREBASE_MESSAGING_SENDER_ID`
-  - `VITE_FIREBASE_APP_ID`
+- **Cloudflare Workers (استقرار دستی با ترمینال):**
+  مخصوص توابع سرورلس است ولی اخیراً با قابلیت Workers Assets قابلیت میزبانی فرانت‌اند را هم پیدا کرده است.
 
-## 3. Uploading Data
-I have added a comprehensive guide to the **Staff Portal** (Admin Page).
-- You can now use **Smart AI Upload** (拍照) to extract data from tombstone photos.
-- Or use **Bulk Upload (CSV)** to migrate paper records.
-- Download the **Unicode Template** directly from the portal to ensure correct formatting for Persian characters.
+اگر کلودفلر به شما پیام می‌دهد که به جای Workers پروژه شما Pages است یا بالعکس، برای سینک کردن آن دو راهکار ساده زیر را دارید:
+
+---
+
+## 🎯 روش اول: استقرار از طریق Cloudflare Pages (ساده‌ترین و بهترین روش با گیت‌هاب)
+
+اگر پروژه خود را در کلودفلر به صورت **Pages** تعریف کرده‌اید و گیت‌هاب را متصل کرده‌اید:
+
+1. به **Cloudflare Dashboard** بروید.
+2. از منوی سمت چپ گزینه‌‌ی **Workers & Pages** را انتخاب کنید.
+3. بر روی پروژه خود کلیک کنید و به تب **Settings** -> **Build & Deploy** بروید.
+4. تنظیمات بیلد (Build configuration) را ویرایش کرده و دقیقاً مقادیر زیر را قرار دهید:
+   - **Framework preset:** `Vite` (یا None)
+   - **Build command:** `npm run build`
+   - **Build output directory:** `dist`
+   - **Root directory:** `/` (یا خالی بگذارید)
+5. به تب **Variables** یا **Settings -> Environment Variables** رفته و متغیرهای زیر را ثبت کنید:
+   - `GEMINI_API_KEY`: کلید اختصاصی جمینای شما (بسیار مهم برای پردازش عکس قبرها)
+   - متغیرهای فایربیس (Firebase) برای دیتابیس (اختیاری):
+     - `VITE_FIREBASE_API_KEY`
+     - `VITE_FIREBASE_AUTH_DOMAIN`
+     - `VITE_FIREBASE_PROJECT_ID`
+     - `VITE_FIREBASE_STORAGE_BUCKET`
+     - `VITE_FIREBASE_MESSAGING_SENDER_ID`
+     - `VITE_FIREBASE_APP_ID`
+6. ذخیره کنید و در زبانه **Deployments** دکمه‌ی **Retry Deployment** را بزنید یا یک کامیت جدید روی گیت‌هاب پوش کنید تا کلودفلر خودکار سایت را همراه با وب‌ورکر بک‌اند (`_worker.js`) بالا بیاورد.
+
+---
+
+## ⚙️ روش دوم: استقرار به صورت Cloudflare Workers (با استفاده از CLI)
+
+اگر می‌خواهید مستقیماً با دستورات ترمینال استقرار را انجام دهید و از CLI Wrangler استفاده کنید:
+
+1. فایل `wrangler.json` از پیش برای شما پیکربندی شده است:
+   ```json
+   {
+     "name": "eternal-path-burial-portal",
+     "compatibility_date": "2026-05-28",
+     "assets": {
+       "directory": "./dist",
+       "not_found_handling": "single-page-application"
+     }
+   }
+   ```
+2. دستور زیر را برای لاگین و استقرار اجرا کنید:
+   ```bash
+   npx wrangler login
+   npm run build
+   npx wrangler deploy
+   ```
+3. مطمئن شوید متغیر سرّی `GEMINI_API_KEY` را در بخش تنظیمات ورکر در داشبورد کلودفلر ست کرده‌اید.
+
+---
+
+## ❓ نحوه حذف پروژه قدیمی در کلودفلر و شروع مجدد
+
+اگر تنظیمات پروژه قبلی خراب شده و می‌شوید آن را کلاً پاک کنید و از اول بسازید:
+
+1. وارد **Cloudflare Dashboard** شوید.
+2. از منوی سمت چپ به **Workers & Pages** وارد شوید.
+3. پروژه قبلی خود را انتخاب کنید.
+4. به تب **Settings** بروید.
+5. به پایین‌ترین بخش صفحه اسکرول کنید تا دکمه قرمز رنگ **Delete Project** را مشاهده کنید. پروژه قدیمی را کلا پاک کنید.
+6. اکنون مجدداً به بخش **Workers & Pages** بروید، روی **Create application** کلیک کنید.
+7. زبانه **Pages** را انتخاب کرده و روی **Connect to Git** بزنید.
+8. مخزن گیت‌هاب خود را انتخاب کنید و تنظیمات بیلد بالا (روش اول) را برای آن اعمال کنید.
+
+با استفاده از معماری لبه‌ی جدید `_worker.js` اکنون نرم‌افزار شما با بیشترین سرعت، امنیت و پایداری در لبه شبکه جهانی کلودفلر خدمت‌رسانی خواهد کرد. موفق باشید! 🚀
