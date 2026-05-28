@@ -1,6 +1,6 @@
 {
-  "name": "Eternal Path: Burial Portal",
-  "description": "سامانه مدیریت و مسیریابی آرامستان با استفاده از هوش مصنوعی، شامل پنل مدیریت پیشرفته با قابلیت بارگذاری دسته‌جمعی داده‌ها و میزبانی ابری بهینه.",
-  "requestFramePermissions": ["camera", "geolocation"],
+  "name": "HostFinder & Optimizer",
+  "description": "برنامه راهنمای هوشمند مقایسه و بهینه‌سازی هاست‌های رایگان مانند کلودفلر، ورسل و نتلیفای بر اساس نوع پروژه",
+  "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
