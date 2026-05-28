@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { Compass, ZoomIn, ZoomOut, Info, User, Crosshair, ExternalLink, Map as MapIcon, Navigation, Activity, Clock, Calendar, AlertCircle, MapPin } from 'lucide-react';
+import { Compass, ZoomIn, ZoomOut, Info, User, Crosshair, ExternalLink, Map as MapIcon, Navigation, Activity, Clock, Calendar, AlertCircle, MapPin, Layers, Sun, Moon, Map, LocateFixed, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 // Bounding box mapping for Zanjan Behesht-e-Zahra Coordinates
@@ -26,7 +26,7 @@ interface OfflineCemeteryMapProps {
   onMarkerClick?: (marker: MapMarker) => void;
   onLocationSelect?: (loc: { lat: number; lng: number }) => void;
   isManualSelectMode?: boolean;
-  mapStyle?: 'historical' | 'satellite';
+  mapStyle?: 'satellite' | 'streets' | 'minimal';
 }
 
 // Custom Marker Icons for high-fidelity interactive map
@@ -161,6 +161,9 @@ export default function OfflineCemeteryMap({
   const [map, setMap] = useState<L.Map | null>(null);
   const [isTrafficEnabled, setIsTrafficEnabled] = useState(false);
   const [isSimulationMode, setIsSimulationMode] = useState(false);
+  const [activeMapStyle, setActiveMapStyle] = useState<'satellite' | 'streets' | 'minimal'>(mapStyle);
+  const [isLegendOpen, setIsLegendOpen] = useState(true);
+  const [showMarkers, setShowMarkers] = useState(true);
   const [trafficDay, setTrafficDay] = useState<number>(new Date().getDay());
   const [trafficHour, setTrafficHour] = useState<number>(new Date().getHours());
 
@@ -304,7 +307,7 @@ export default function OfflineCemeteryMap({
           );
         })}
 
-        {mapStyle === 'satellite' ? (
+        {activeMapStyle === 'satellite' ? (
           <>
             {/* Esri World Imagery - Pro Grade Satellite Engine */}
             <TileLayer
@@ -315,10 +318,15 @@ export default function OfflineCemeteryMap({
             {/* Stamen Toner Labels - High contrast labels for better visibility in Iran */}
             <TileLayer
               url="https://stamen-tiles-{s}.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png"
-              className="opacity-80 mix-blend-screen pointer-events-none brightness-110"
+              className="opacity-70 mix-blend-screen pointer-events-none brightness-110 invert grayscale"
               attribution='&copy; Stamen'
             />
           </>
+        ) : activeMapStyle === 'streets' ? (
+          <TileLayer
+            attribution='&copy; OpenStreetMap'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
         ) : (
           <TileLayer
             attribution='&copy; CARTO'
@@ -362,11 +370,18 @@ export default function OfflineCemeteryMap({
         {isValidLatLng(originLocation) && isValidLatLng(graveLocation) && (
           <Polyline 
             positions={[[originLocation.lat, originLocation.lng], [graveLocation.lat, graveLocation.lng]]}
-            pathOptions={{ color: '#10b981', weight: 4, dashArray: '12, 16', opacity: 0.8 }}
+            pathOptions={{ 
+              color: '#10b981', 
+              weight: 5, 
+              dashArray: '1, 15', 
+              opacity: 1,
+              lineCap: 'round',
+              className: 'animated-path' 
+            }}
           />
         )}
 
-        {markers.map((mk) => (
+        {showMarkers && markers.map((mk) => (
           selectedMarkerId !== mk.id && isValidLatLng(mk.location) && (
             <Marker 
               key={mk.id} 
@@ -544,37 +559,73 @@ export default function OfflineCemeteryMap({
           <div className="h-px bg-stone-100 mx-3" />
           <button onClick={handleZoomOut} className="w-10 h-10 flex items-center justify-center hover:bg-stone-50 rounded-xl transition-all text-stone-800 active:scale-90"><ZoomOut className="w-5 h-5" /></button>
         </div>
-        <button onClick={handleRecenter} className="w-12 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-2xl flex items-center justify-center transition-all hover:shadow-emerald-500/20 active:scale-95 border border-emerald-500/50 group/compass">
+        
+        <div className="bg-white/90 backdrop-blur-2xl p-1 rounded-2xl shadow-2xl border border-white/40 flex flex-col gap-1">
+          <button 
+            onClick={() => setActiveMapStyle(activeMapStyle === 'satellite' ? 'streets' : 'satellite')} 
+            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-90 ${activeMapStyle === 'satellite' ? 'bg-emerald-50 text-emerald-600' : 'text-stone-800 hover:bg-stone-50'}`}
+            title="تغییر لایه نقشه"
+          >
+            <Layers className="w-5 h-5" />
+          </button>
+          <div className="h-px bg-stone-100 mx-3" />
+          <button 
+            onClick={() => setShowMarkers(!showMarkers)} 
+            className={`w-10 h-10 flex items-center justify-center rounded-xl transition-all active:scale-90 ${showMarkers ? 'bg-emerald-50 text-emerald-600' : 'text-stone-400 hover:bg-stone-50'}`}
+            title="نمایش/عدم نمایش سایر مزارات"
+          >
+            {showMarkers ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+          </button>
+        </div>
+
+        <button onClick={handleRecenter} className="w-12 h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl shadow-2xl flex items-center justify-center transition-all hover:shadow-emerald-500/20 active:scale-95 border border-emerald-500/50 group/compass shadow-emerald-500/30">
           <Compass className="w-6 h-6 group-hover/compass:rotate-12 transition-transform" />
         </button>
       </div>
 
       {/* Map Legend */}
       <div className="absolute bottom-3 right-3 z-10 hidden lg:block group/legend">
-        <div className="bg-white/90 backdrop-blur-xl p-3 rounded-2xl shadow-2xl border border-white/50 text-right font-sans transition-all w-48 group-hover/legend:w-56 overflow-hidden">
-          <h6 className="text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 flex items-center justify-end gap-1.5 flex-row-reverse">
-             راهنمای نقشه
-             <Info className="w-3 h-3" />
-          </h6>
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700">
-              <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
-              <span>مزار انتخابی شما</span>
-            </div>
-            <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700">
-              <div className="w-2.5 h-2.5 bg-white border border-stone-300 rounded-full" />
-              <span>مزارات عمومی</span>
-            </div>
-            <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700">
-              <div className="w-2.5 h-2.5 bg-blue-600 rounded-full outline outline-2 outline-white" />
-              <span>موقعیت کنونی شما</span>
-            </div>
-            <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700 border-t border-stone-100 pt-1.5 mt-1.5">
-              <div className="w-3 h-0.5 bg-emerald-500 border-t border-dashed border-emerald-500/50" />
-              <span>مسیر مستقیم به هدف</span>
-            </div>
-          </div>
-        </div>
+        <AnimatePresence>
+          {isLegendOpen && (
+            <motion.div 
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 20, opacity: 0 }}
+              className="bg-white/95 backdrop-blur-xl p-3 rounded-2xl shadow-2xl border border-white/50 text-right font-sans transition-all w-48 overflow-hidden mb-2"
+            >
+              <div className="flex items-center justify-between flex-row-reverse mb-2">
+                <h6 className="text-[10px] font-black text-stone-400 uppercase tracking-widest flex items-center justify-end gap-1.5 flex-row-reverse">
+                   راهنمای نقشه
+                   <Info className="w-3 h-3" />
+                </h6>
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700">
+                  <div className="w-2.5 h-2.5 bg-emerald-500 rounded-full shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
+                  <span>مزار انتخابی شما</span>
+                </div>
+                <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700">
+                  <div className="w-2.5 h-2.5 bg-white border border-stone-300 rounded-full" />
+                  <span>مزارات عمومی</span>
+                </div>
+                <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700">
+                  <div className="w-2.5 h-2.5 bg-blue-600 rounded-full outline outline-2 outline-white" />
+                  <span>موقعیت کنونی شما</span>
+                </div>
+                <div className="flex items-center gap-2 flex-row-reverse text-[9px] font-bold text-stone-700 border-t border-stone-100 pt-1.5 mt-1.5">
+                  <div className="w-3 h-0.5 bg-emerald-500 border-t border-dashed border-emerald-500/50" />
+                  <span>مسیر مستقیم به هدف</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <button 
+          onClick={() => setIsLegendOpen(!isLegendOpen)}
+          className="w-8 h-8 bg-white/90 backdrop-blur-lg border border-stone-100 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-800 transition-all ml-auto shadow-lg"
+        >
+          <Info className="w-4 h-4" />
+        </button>
       </div>
 
       <AnimatePresence>

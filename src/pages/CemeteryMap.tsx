@@ -4,6 +4,7 @@ import { collection, getDocs, query, limit } from 'firebase/firestore';
 import { MapPin, Search, ChevronRight, X, Info, Footprints, Calendar, Navigation } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from 'react-router-dom';
+import L from 'leaflet';
 import { fallbackZanjanGraves } from '../lib/fallbackData';
 import OfflineCemeteryMap, { MapMarker } from '../components/OfflineCemeteryMap';
 import GravestonePortrait from '../components/GravestonePortrait';
@@ -13,9 +14,27 @@ export default function CemeteryMap() {
   const [selectedGrave, setSelectedGrave] = useState<any | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null);
+
   useEffect(() => {
     fetchGraves();
+    // Get user location for distance calculation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+        (err) => console.warn("Location access denied for distance info", err)
+      );
+    }
   }, []);
+
+  const calculateDistance = (loc: { lat: number, lng: number }) => {
+    if (!userLocation) return null;
+    const from = L.latLng(userLocation.lat, userLocation.lng);
+    const to = L.latLng(loc.lat, loc.lng);
+    const dist = from.distanceTo(to);
+    if (dist < 1000) return `${Math.round(dist)} متر`;
+    return `${(dist / 1000).toFixed(1)} کیلومتر`;
+  };
 
   const fetchGraves = async () => {
     try {
@@ -74,6 +93,7 @@ export default function CemeteryMap() {
             if (found) setSelectedGrave(found);
           }}
           graveLocation={selectedGrave?.location}
+          originLocation={userLocation}
           targetGraveName={selectedGrave?.fullName}
           targetGraveInfo={selectedGrave?.block}
         />
@@ -248,6 +268,15 @@ export default function CemeteryMap() {
                       <div className="space-y-1">
                         <p className="font-black text-[15px] group-hover:text-emerald-900 transition-colors">{grave.fullName}</p>
                         <div className="flex items-center gap-2 justify-end text-[10px] text-stone-400 font-bold">
+                          {calculateDistance(grave.location) && (
+                            <>
+                              <span className="text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded flex items-center gap-1 font-black">
+                                <Navigation className="w-2.5 h-2.5" />
+                                {calculateDistance(grave.location)}
+                              </span>
+                              <span className="w-1 h-1 bg-stone-300 rounded-full" />
+                            </>
+                          )}
                           <span>قطعه {grave.block || '...'}</span>
                           <span className="w-1 h-1 bg-stone-300 rounded-full" />
                           <span>فرزند {grave.fatherName || '...'}</span>

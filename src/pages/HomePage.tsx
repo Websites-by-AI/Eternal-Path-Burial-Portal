@@ -38,7 +38,7 @@ export default function HomePage() {
 
   // Filter inside test module state
   const [quickSearchQuery, setQuickSearchQuery] = useState<string>('');
-  const [homeMapStyle, setHomeMapStyle] = useState<'historical' | 'satellite'>('historical');
+  const [homeMapStyle, setHomeMapStyle] = useState<'satellite' | 'streets' | 'minimal'>('satellite');
 
   // Firestore DB Diagnostics state
   const [dbDiagStatus, setDbDiagStatus] = useState<string>("بر روی تست کلیک کنید");
@@ -561,10 +561,10 @@ export default function HomePage() {
                 {/* Historical vs Satellite Toggle Switch */}
                 <div className="bg-emerald-50/80 backdrop-blur-sm p-1 rounded-xl flex items-center gap-1 text-[9px] font-black border border-emerald-100">
                   <button
-                    onClick={() => setHomeMapStyle('historical')}
-                    className={`px-3 py-1.5 rounded-lg transition-all ${homeMapStyle === 'historical' ? 'bg-emerald-700 text-white shadow-md' : 'text-emerald-900/40 hover:text-emerald-900'}`}
+                    onClick={() => setHomeMapStyle('streets')}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${homeMapStyle === 'streets' ? 'bg-emerald-700 text-white shadow-md' : 'text-emerald-900/40 hover:text-emerald-900'}`}
                   >
-                    تاریخی
+                    خیابان‌ها
                   </button>
                   <button
                     onClick={() => setHomeMapStyle('satellite')}
@@ -592,9 +592,9 @@ export default function HomePage() {
               </div>
 
               <p className="text-[9.5px] text-stone-400 text-right leading-relaxed mt-2.5 font-medium">
-                {homeMapStyle === 'historical' 
-                  ? "🔹 در حال نمایش استایل «نقشه تاریخی» آرامستان با رنگ‌بندی کهنه‌نما و خطوط کتیبه‌ای کجیل."
-                  : "🔸 در حال نمایش استایل «تصاویر ماهواره‌ای کنونی» با رنگ‌بندی تیره، رادارهای دیجیتال و شبیه‌ساز ترافیکی."
+                {homeMapStyle === 'streets' 
+                  ? "🔹 در حال نمایش استایل «نقشه معابر» با نمایش صریح خیابان‌ها و بلوک‌های آرامستان."
+                  : "🔸 در حال نمایش استایل «تصاویر ماهواره‌ای کنونی» با کیفیت بالا و رادارهای دیجیتال."
                 }
               </p>
             </div>

@@ -15,3 +15,40 @@
     @apply antialiased bg-[#f8faf9] text-stone-800;
   }
 }
+
+.animated-path {
+  stroke-dasharray: 10, 10;
+  animation: dashmove 20s linear infinite;
+}
+
+@keyframes dashmove {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.leaflet-container {
+  font-family: inherit !important;
+}
+
+.custom-popup .leaflet-popup-content-wrapper {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 1rem;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.custom-popup .leaflet-popup-content {
+  margin: 0;
+  width: auto !important;
+}
+
+.custom-popup .leaflet-popup-tip-container {
+  display: none;
+}
