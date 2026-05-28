@@ -238,6 +238,28 @@ export default function StaffPortal({ user }: StaffPortalProps) {
         </button>
       </div>
 
+      {/* Guide Section */}
+      <div className="max-w-4xl mx-auto mb-12 bg-amber-50/50 border border-amber-100 rounded-xl p-6 text-right font-sans">
+        <div className="flex items-center gap-3 flex-row-reverse mb-4 text-amber-900">
+          <AlertCircle className="w-5 h-5" />
+          <h4 className="text-sm font-black uppercase tracking-widest">راهنمای بارگذاری و بایگانی دیجیتال</h4>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="space-y-2">
+            <h5 className="text-[11px] font-black text-amber-800">۱. ثبت در محل (تکی)</h5>
+            <p className="text-[10px] text-amber-700/80 leading-relaxed font-bold">از سنگ مزار عکس بگیرید؛ هوش مصنوعی متن را استخراج کرده و GPS گوشی شما محل دقیق را ثبت می‌کند.</p>
+          </div>
+          <div className="space-y-2">
+            <h5 className="text-[11px] font-black text-amber-800">۲. بارگذاری انبوه (CSV)</h5>
+            <p className="text-[10px] text-amber-700/80 leading-relaxed font-bold">اطلاعات بایگانی کاغذی را در فایل اکسل وارد کرده و با فرمت CSV ذخیره و بارگذاری کنید.</p>
+          </div>
+          <div className="space-y-2">
+            <h5 className="text-[11px] font-black text-amber-800">۳. همگام‌سازی نهایی</h5>
+            <p className="text-[10px] text-amber-700/80 leading-relaxed font-bold">پس از تایید اطلاعات، داده‌ها در پایگاه داده ابری (Firebase/Cloudflare) ذخیره و در نقشه عمومی فعال می‌شوند.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white shadow-2xl overflow-hidden border border-stone-100 rounded-sm">
         {/* Progress Bar (Only for individual) */}
         {viewMode === 'individual' && (
@@ -341,6 +363,19 @@ export default function StaffPortal({ user }: StaffPortalProps) {
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  <div className="p-6 bg-stone-50 border-t border-stone-100 italic text-[9px] text-stone-400">
+                    * توجه: تصاویر باید بصورت URL معتبر در فایل CSV قرار بگیرند. در غیر این صورت تصویر پیش‌فرض جایگزین خواهد شد.
+                  </div>
+
+                  <div className="p-6 bg-stone-50 border-t border-stone-100 text-right">
+                    <h5 className="text-[10px] font-black uppercase mb-2">راهنمای بارگذاری</h5>
+                    <ul className="list-disc list-inside space-y-1 text-stone-500 leading-relaxed pr-2">
+                       <li>فایل را حتماً با فرمت CSV ذخیره کنید.</li>
+                       <li>مختصات (lat, lng) باید اعداد اعشاری باشند.</li>
+                       <li>نام ستون‌ها باید دقیقاً مطابق الگو باشد.</li>
+                    </ul>
                   </div>
 
                   <div className="p-6 bg-stone-50 border-t border-stone-100">
@@ -628,6 +663,7 @@ export default function StaffPortal({ user }: StaffPortalProps) {
                </motion.div>
             )}
           </AnimatePresence>
+        )}
         </div>
       </div>
     </div>
